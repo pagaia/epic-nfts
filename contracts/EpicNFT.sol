@@ -14,6 +14,7 @@ contract EpicNFT is ERC721URIStorage {
     // Magic given to us by OpenZeppelin to help us keep track of tokenIds.
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
+    uint256 private _maxTokens = 50;
 
     // This is our SVG code. All we need to change is the word that's displayed. Everything else stays the same.
     // So, we make a baseSvg variable here that all our NFTs can use.
@@ -179,6 +180,9 @@ contract EpicNFT is ERC721URIStorage {
         "alicatabais"
     ];
 
+    // define the event
+    event NewEpicNFTMinted(address sender, uint256 tokenId);
+
     // We need to pass the name of our NFTs token and it's symbol.
     constructor() ERC721("SquareNFT", "SQUARE") {
         console.log("This is my NFT contract. Woah!");
@@ -229,6 +233,10 @@ contract EpicNFT is ERC721URIStorage {
 
     // A function our user will hit to get their NFT.
     function makeAnEpicNFT() public {
+        require(
+            _tokenIds.current() < _maxTokens,
+            "Already 50 tokens are minted! Sorry too late"
+        );
         // Get the current tokenId, this starts at 0.
         uint256 newItemId = _tokenIds.current();
 
@@ -291,12 +299,6 @@ contract EpicNFT is ERC721URIStorage {
         // Update your URI!!!
         _setTokenURI(newItemId, finalTokenUri);
 
-        console.log(
-            "An NFT w/ ID %s has been minted to %s",
-            newItemId,
-            msg.sender
-        );
-
         // Increment the counter for when the next NFT is minted.
         _tokenIds.increment();
         console.log(
@@ -304,5 +306,11 @@ contract EpicNFT is ERC721URIStorage {
             newItemId,
             msg.sender
         );
+
+        emit NewEpicNFTMinted(msg.sender, newItemId);
+    }
+
+    function getTotalNFTsMintedSoFar() public view returns (uint256) {
+        return _tokenIds.current() + 1;
     }
 }
